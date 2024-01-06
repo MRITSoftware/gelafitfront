@@ -7,6 +7,7 @@ public class ListaDeCompras extends JFrame {
 
     private DefaultListModel<Produto> modelProdutos;
     private JList<Produto> listaProdutos;
+    private CarrinhoDeCompras carrinho;
 
     public ListaDeCompras() {
         // Configurações básicas da janela
@@ -42,6 +43,9 @@ public class ListaDeCompras extends JFrame {
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         add(scrollPane, BorderLayout.CENTER);
 
+        // Botões no painel inferior
+        JPanel panelBotoesInferior = new JPanel(new BorderLayout());
+
         // Botão para voltar
         JButton btnVoltar = new JButton("Voltar");
         btnVoltar.addActionListener(new ActionListener() {
@@ -51,9 +55,22 @@ public class ListaDeCompras extends JFrame {
                 JOptionPane.showMessageDialog(null, "Botão Voltar pressionado");
             }
         });
+        panelBotoesInferior.add(btnVoltar, BorderLayout.WEST);
 
-        // Adiciona o botão Voltar na parte inferior
-        add(btnVoltar, BorderLayout.SOUTH);
+        // Botão do carrinho com uma imagem pequena
+        ImageIcon iconeCarrinho = new ImageIcon("C:\\Users\\sakia\\OneDrive\\Área de Trabalho\\tela de compra\\assests\\carrinho.png");
+        Image imagemRedimensionada = iconeCarrinho.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
+        ImageIcon iconeRedimensionado = new ImageIcon(imagemRedimensionada);
+        JButton btnCarrinho = new JButton("Carrinho", iconeRedimensionado);
+        btnCarrinho.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                abrirCarrinho();
+            }
+        });
+        panelBotoesInferior.add(btnCarrinho, BorderLayout.EAST);
+
+        add(panelBotoesInferior, BorderLayout.SOUTH);
 
         // Ação dos botões
         btnSuco.addActionListener(new ActionListener() {
@@ -88,6 +105,13 @@ public class ListaDeCompras extends JFrame {
                 }
             }
         });
+
+        // Criar a instância do carrinho
+        carrinho = new CarrinhoDeCompras();
+    }
+
+    private void abrirCarrinho() {
+        carrinho.setVisible(true);
     }
 
     private void popularListaProdutosSuco() {
@@ -130,15 +154,18 @@ public class ListaDeCompras extends JFrame {
     }
 
     private void exibirDetalhesProduto(Produto produto) {
-    DetalhesProdutoFrame detalhesFrame = new DetalhesProdutoFrame(produto, this);
-    detalhesFrame.setVisible(true);
+        DetalhesProdutoFrame detalhesFrame = new DetalhesProdutoFrame(produto, this);
+        detalhesFrame.setVisible(true);
     }
-
 
     private ImageIcon redimensionarImagem(String caminho) {
         ImageIcon imagemOriginal = new ImageIcon(caminho);
         Image imagemRedimensionada = imagemOriginal.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         return new ImageIcon(imagemRedimensionada);
+    }
+
+    public CarrinhoDeCompras getCarrinho() {
+        return carrinho;
     }
 
     public static void main(String[] args) {
@@ -154,9 +181,7 @@ public class ListaDeCompras extends JFrame {
 
         public ProdutoCellRenderer() {
             setOpaque(true);
-            setHorizontalAlignment(JLabel.CENTER);
-            setVerticalAlignment(JLabel.CENTER);
-            setBorder(BorderFactory.createLineBorder(Color.BLACK)); 
+            setBorder(BorderFactory.createLineBorder(Color.BLACK));
         }
 
         @Override
@@ -166,92 +191,61 @@ public class ListaDeCompras extends JFrame {
         }
     }
 
-class DetalhesProdutoFrame extends JFrame {
+    class DetalhesProdutoFrame extends JFrame {
 
-    private ListaDeCompras listaDeCompras; // Referência à janela da lista de compras
+        private ListaDeCompras listaDeCompras; // Referência à janela da lista de compras
 
-    public DetalhesProdutoFrame(Produto produto, ListaDeCompras listaDeCompras) {
-        this.listaDeCompras = listaDeCompras; // Inicializa a referência à janela da lista de compras
+        public DetalhesProdutoFrame(Produto produto, ListaDeCompras listaDeCompras) {
+            this.listaDeCompras = listaDeCompras; // Inicializa a referência à janela da lista de compras
 
-        setTitle("Detalhes do Produto");
-        setSize(300, 400); // Tamanho fixo da janela
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            setTitle("Detalhes do Produto");
+            setSize(300, 400); // Tamanho fixo da janela
+            setLocationRelativeTo(null);
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        // Exibe a imagem, nome e preço na nova janela
-        JLabel labelImagem = new JLabel();
-        labelImagem.setIcon(redimensionarImagem(produto.getImagem(), 200, 200)); // Redimensiona a imagem para 200x200 pixels
-        JLabel labelNome = new JLabel("Nome: " + produto.getNome());
-        JLabel labelPreco = new JLabel("Preço: R$" + produto.getPreco());
+            // Exibe a imagem na nova janela
+            JLabel labelImagem = new JLabel();
+            labelImagem.setIcon(redimensionarImagem(produto.getImagem(), 200, 200)); // Redimensiona a imagem para 200x200 pixels
 
-        // Cria um painel com layout BoxLayout na direção Y (vertical)
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.add(labelImagem);
-        panel.add(labelNome);
-        panel.add(labelPreco);
+            // Cria um painel com layout BoxLayout na direção Y (vertical)
+            JPanel panel = new JPanel();
+            panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+            panel.add(labelImagem);
 
-        // Adiciona o botão "Comprar" ao painel
-        JButton btnComprar = new JButton("Comprar");
-        btnComprar.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(null, "Produto adicionado ao carrinho: " + produto.getNome());
-            }
-        });
-        panel.add(btnComprar);
+            // Adiciona o botão "Comprar" ao painel
+            JButton btnComprar = new JButton("Adicionar no carrinho");
+            btnComprar.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    JOptionPane.showMessageDialog(null, "Produto adicionado ao carrinho: " + produto.getNome());
+                    // Adicione a lógica para adicionar o produto ao carrinho aqui
+                    // Você pode chamar um método na instância de ListaDeCompras ou CarrinhoDeCompras
+                }
+            });
+            panel.add(btnComprar);
 
-        // Adiciona o botão "Voltar" ao painel
-        JButton btnVoltar = new JButton("Voltar");
-        btnVoltar.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                voltarParaListaDeCompras();
-            }
-        });
-        panel.add(btnVoltar);
+            // Adiciona o botão "Voltar" ao painel
+            JButton btnVoltar = new JButton("Voltar");
+            btnVoltar.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    voltarParaListaDeCompras();
+                }
+            });
+            panel.add(btnVoltar);
 
-        // Adiciona o painel à janela
-        add(panel);
-    }
-
-    private ImageIcon redimensionarImagem(ImageIcon imagemOriginal, int largura, int altura) {
-        Image imagemRedimensionada = imagemOriginal.getImage().getScaledInstance(largura, altura, Image.SCALE_SMOOTH);
-        return new ImageIcon(imagemRedimensionada);
-    }
-
-    private void voltarParaListaDeCompras() {
-        this.dispose(); // Fecha a janela de detalhes do produto
-        listaDeCompras.setVisible(true); // Torna a janela de lista de compras visível novamente
-    }
-}
-
-    class Produto {
-        private String nome;
-        private double preco;
-        private ImageIcon imagem;
-
-        public Produto(String nome, double preco, ImageIcon imagem) {
-            this.nome = nome;
-            this.preco = preco;
-            this.imagem = imagem;
+            // Adiciona o painel à janela
+            add(panel);
         }
 
-        public String getNome() {
-            return nome;
+        private ImageIcon redimensionarImagem(ImageIcon imagemOriginal, int largura, int altura) {
+            Image imagemRedimensionada = imagemOriginal.getImage().getScaledInstance(largura, altura, Image.SCALE_SMOOTH);
+            return new ImageIcon(imagemRedimensionada);
         }
 
-        public double getPreco() {
-            return preco;
-        }
-
-        public ImageIcon getImagem() {
-            return imagem;
-        }
-
-        @Override
-        public String toString() {
-            return nome;
+        private void voltarParaListaDeCompras() {
+            this.dispose(); // Fecha a janela de detalhes do produto
+            listaDeCompras.setVisible(true); // Torna a janela de lista de compras visível novamente
         }
     }
 }
